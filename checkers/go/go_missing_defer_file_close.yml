@@ -1,0 +1,37 @@
+language: go
+name: go_missing_defer_file_close
+message: "Open files should be closed using defer statement to prevent resource leaks."
+category: best-practice
+severity: warning
+pattern: >
+  (
+      ((function_declaration
+  body: (block
+    (short_var_declaration
+      left: (expression_list
+        (identifier) @file_var 
+        (identifier) @err_var)
+      right: (expression_list
+        (call_expression
+          function: (selector_expression
+            operand: (identifier) @os
+            field: (field_identifier) @open_func))))
+    
+    ) @body
+
+  (#eq? @os "os")
+  (#not-match? @body ".*defer.*")
+  (#match? @open_func "^Open")
+  ))
+  )
+  @go_missing_defer_file_close
+
+exclude:
+  - "test/**"
+  - "*_test.go"
+  - "tests/**"
+  - "__tests__/**"
+description: |
+  Open files should be closed using defer statement to prevent resource leaks.
+  For example, use defer file.Close() to ensure that the file is closed when the function returns.
+  This helps prevent resource leaks and ensures that the file is closed even if an error occurs.
